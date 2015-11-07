@@ -1,0 +1,679 @@
+#include<stdio.h>
+#include<ctype.h>
+#include<string.h>
+#include<stdlib.h>
+
+int convertDecimalToBinary(int a[]);
+void convertBinaryToOctal(long long bin);
+void convertBinaryToHex(long long bin);
+long long convertBinaryToDecimal(long long bin);
+char convertOctalToBinary(char octal[]);
+char convertHexToBinary(char hex[]);
+void clear();
+
+
+int main()
+{
+    int userInput, loop, again;
+    int i;
+    char b [15];
+    long long bin = 0;
+
+    printf("=====================================================\n");
+    printf("Welcome to the Artur's program of converting numbers!\n");
+
+    do {
+        printf("\n");
+        printf("=====================================================\n");
+        printf("        Choose what you want to convert: \n");
+        printf("\n");
+        printf("*1)DECIMAL*  *2)BINARY*  *3)OCTAL*  *4)HEXADECIMAL* \n");
+        loop = 1;
+        int a[14] = {8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1};
+        char octal [25] = "";
+        char hex [25] = "";
+        while (loop) {
+            scanf(" %d", &userInput);
+
+            if (userInput == 1) {
+                convertDecimalToBinary(a);
+                for (i = 0; i < 14; i++) {
+                    if (a[i] == 1) {
+                        b[i] = '1';
+                    } else if (a[i] == 0) {
+                        b[i] = '0';
+                    }
+                }
+                bin = atoll(b);
+                printf("------------------------------------- \n");
+                convertBinaryToOctal(bin);
+                printf("------------------------------------- \n");
+                convertBinaryToHex(bin);
+                printf("------------------------------------- \n");
+                loop = 0;
+            } else if (userInput == 2) {
+
+                bin = convertBinaryToDecimal(bin);
+                printf("------------------------------------- \n");
+                convertBinaryToOctal(bin);
+                printf("------------------------------------- \n");
+                convertBinaryToHex(bin);
+                printf("------------------------------------- \n");
+                loop = 0;
+            } else if (userInput == 3) {
+                octal[25] = convertOctalToBinary(octal);
+                bin = atoll(octal);
+                convertBinaryToDecimal(bin);
+                printf("------------------------------------- \n");
+                convertBinaryToHex(bin);
+                printf("------------------------------------- \n");
+                loop = 0;
+            } else if (userInput == 4) {
+                hex[25] = convertHexToBinary(hex);
+                bin = atoll(hex);
+                convertBinaryToDecimal(bin);
+                printf("------------------------------------- \n");
+                convertBinaryToOctal(bin);
+                printf("------------------------------------- \n");
+                loop = 0;
+            } else {
+                printf("Invalid input. Try again \n");
+            }
+        }
+        printf("Would you like to convert another number? yes(0), no(1) \n");
+        scanf("%d", &again);
+        bin = 0;
+        clear();
+
+    } while(again != 1);
+
+    printf("\nHave a nice day!\n");
+    return 0;
+
+}
+
+int convertDecimalToBinary(int a[])
+{
+    int i, num;
+    printf("\n=====================================\n");
+    printf("\n   Enter your DECIMAL number \n");
+    printf("\n=====================================\n");
+    printf("Here: ");
+    scanf(" %d", &num);
+
+    for (i = 0; i < 14; i++){
+        if (num == a[i]) {
+            a[i] = 1;
+            break;
+        }
+        else if (num > a[i]) {
+            num = num - a[i];
+            a[i] = 1;
+        }
+    }
+
+    if (*(a+13) == num) {
+        for (i = 0; i < 14; i++) {
+            if (a[i] != 1) {
+                a[i] = 0;
+
+            }
+        }
+    } else {
+        for (i = 0; i < 14; i++) {
+            if (a[i] != 1) {
+                a[i] = 0;
+                *(a+13) = 0;
+            }
+        }
+    }
+
+    printf("------------------------------------- \n");
+    printf("BINARY equivalent:       ");
+
+    a[0] == 0 ? ( a[1] == 0 ? (a[2] == 0 ? (a[3] == 0 ? (a[4] == 0 ? (a[5] == 0 ? (a[6] == 0 ? (a[7] == 0 ? (a[8] == 0 ? (a[9] == 0 ?
+                 printf("%d%d%d%d \n", a[10], a[11], a[12], a[13]) :
+                 printf("%d%d%d%d%d \n", a[9], a[10], a[11], a[12], a[13])) :
+                 printf("%d%d%d%d%d%d \n", a[8], a[9], a[10], a[11], a[12], a[13])) :
+                 printf("%d%d%d%d%d%d%d \n", a[7], a[8], a[9], a[10], a[11], a[12], a[13])) :
+                 printf("%d%d%d%d%d%d%d%d \n", a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13])) :
+                 printf("%d%d%d%d%d%d%d%d%d \n", a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13])) :
+                 printf("%d%d%d%d%d%d%d%d%d%d \n", a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13])) :
+                 printf("%d%d%d%d%d%d%d%d%d%d%d \n", a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13])) :
+                 printf("%d%d%d%d%d%d%d%d%d%d%d%d \n", a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13])) :
+                 printf("%d%d%d%d%d%d%d%d%d%d%d%d%d \n", a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13])) :
+          printf("%d%d%d%d%d%d%d%d%d%d%d%d%d%d \n", a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]);
+    return a;
+}
+
+void convertBinaryToOctal(long long bin)
+{
+    long long binary;
+    int threeDigits, a, b, c;
+    int a1, b1, c1;
+    int octal;
+    int i, first, second, third, fourth;
+
+    binary = bin;
+
+    for(i = 1; i <= 4; i++) {
+
+        threeDigits = binary % 1000;
+        binary = binary / 1000;
+        a = threeDigits % 10;
+
+        if (a == 1) {
+            a1 = 1;
+        } else {
+            a1 = 0;
+        }
+
+        b = (threeDigits / 10) % 10;
+        if (b == 1) {
+            b1 = 2;
+        } else {
+            b1 = 0;
+        }
+
+        c = (threeDigits / 100) % 10;
+        if (c == 1) {
+            c1 = 4;
+        } else {
+            c1 = 0;
+        }
+
+        if (i == 1) {
+            fourth = a1 + b1 + c1;
+        }
+        else if (i == 2) {
+            third = a1 + b1 + c1;
+        }
+        else if (i == 3) {
+            second = a1 + b1 + c1;
+        }
+        else if (i == 4) {
+            first = a1 + b1 + c1;
+        }
+    }
+    printf("OCTAL equivalent:        ");
+    first == 0 ? (second == 0 ? (third == 0 ? printf("%d \n", fourth) : printf("%d%d \n", third, fourth)) :
+        printf("%d%d%d \n", second, third, fourth)) : printf("%d%d%d%d \n", first, second, third, fourth);
+
+    return;
+
+}
+
+void convertBinaryToHex(long long bin)
+{
+    long long binary;
+    int fourDigits, a, b, c, d;
+    int a1, b1, c1, d1;
+    int i, first, second, third, fourth;
+
+
+    binary = bin;
+
+
+    for(i = 1; i <= 4; i++) {
+
+        fourDigits = binary % 10000;
+        binary = binary / 10000;
+        a = fourDigits % 10;
+
+        if (a == 1) {
+            a1 = 1;
+        } else {
+            a1 = 0;
+        }
+
+        b = (fourDigits / 10) % 10;
+        if (b == 1) {
+            b1 = 2;
+        } else {
+            b1 = 0;
+        }
+
+        c = (fourDigits / 100) % 10;
+        if (c == 1) {
+            c1 = 4;
+        } else {
+            c1 = 0;
+        }
+
+        d = (fourDigits / 1000) % 10;
+        if (d == 1) {
+            d1 = 8;
+        } else {
+            d1 = 0;
+        }
+
+        if (i == 1) {
+            fourth = a1 + b1 + c1 + d1;
+            fourth == 10 ? fourth = 'A' : (fourth == 11 ? (fourth = 'B') : (fourth == 12 ? (fourth = 'C') :
+                            (fourth == 13) ? (fourth = 'D') : (fourth == 14 ? (fourth = 'E') :
+                            (fourth == 15 ? (fourth = 'F'): (fourth = fourth)))));
+        }
+        else if (i == 2) {
+            third = a1 + b1 + c1 + d1;
+            third == 10 ? third = 'A' : (third == 11 ? (third = 'B') : (third == 12 ? (third = 'C') :
+                            (third == 13) ? (third = 'D') : (third == 14 ? (third = 'E') :
+                            (third == 15 ? (third = 'F'): (third = third)))));
+        }
+        else if (i == 3) {
+            second = a1 + b1 + c1 + d1;
+            second == 10 ? second = 'A' : (second == 11 ? (second = 'B') : (second == 12 ? (second = 'C') :
+                            (second == 13) ? (second = 'D') : (second == 14 ? (second = 'E') :
+                            (second == 15 ? (second = 'F'): (second = second)))));
+        }
+        else if (i == 4) {
+            first = a1 + b1 + c1 + d1;
+            first == 10 ? first = 'A' : (first == 11 ? (first = 'B') : (first == 12 ? (first = 'C') :
+                            (first == 13) ? (first = 'D') : (first == 14 ? (first = 'E') :
+                            (first == 15 ? (first = 'F'): (first = first)))));
+        }
+    }
+
+    printf("HEXADECIMAL equivalent:  ");
+    if (first > 9) {                                       // I'm barely found this simple way for output, other version was pain in the ASS!
+        printf("%c", first);                               // O my! So elegant!
+    } else {
+        if (first != 0) {
+            printf("%d", first);
+        }
+    }
+    if (second > 9) {
+        printf("%c", second);
+    } else {
+        if (second != 0 || second < first) {
+            printf("%d", second);
+        }
+    }
+    if (third > 9) {
+        printf("%c", third);
+    } else {
+        if (third != 0 || third < second || third < first) {
+            printf("%d", third);
+        }
+    }
+    if (fourth > 9) {
+        printf("%c \n", fourth);
+    } else {
+        printf("%d \n", fourth);
+
+    }
+    return;
+}
+
+long long convertBinaryToDecimal(long long bin)
+{
+    long long binary;
+    long long a, b, c, d, e, f, g, h, i, j, k, l, o, p;
+    int decimal;
+
+    if (bin == 0) {
+        printf("\n=====================================\n");
+        printf("\n   Enter your BINARY number \n");
+        printf("\n=====================================\n");
+        printf("Here: ");
+        scanf(" %lld", &binary);
+    } else {
+        binary = bin;
+    }
+
+    a = binary % 10;
+        if (a == 0) {
+            a = 0;
+        } else if (a == 1) {
+            a = 1;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    b = (binary % 100) / 10;
+        if (b == 1) {
+            b = 2;
+        } else if (b == 0) {
+            b = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    c = (binary % 1000) / 100;
+        if (c == 1) {
+            c = 4;
+        } else if (c == 0) {
+            c = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    d = (binary % 10000) / 1000;
+        if (d == 1) {
+            d = 8;
+        } else if (d == 0) {
+            d = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    e = (binary % 100000) / 10000;
+        if (e == 1) {
+            e = 16;
+        } else if (e == 0) {
+            e = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    f = (binary % 1000000) / 100000;
+        if (f == 1) {
+            f = 32;
+        } else if (f == 0) {
+            f = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    g = (binary % 10000000) / 1000000;
+        if (g == 1) {
+            g = 64;
+        } else if (g == 0) {
+            g = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    h = (binary % 100000000) / 10000000;
+        if (h == 1) {
+            h = 128;
+        } else if (h == 0) {
+            h = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    i = (binary % 1000000000) / 100000000;
+        if (i == 1) {
+            i = 256;
+        } else if (i == 0) {
+            i = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    j = (binary % 10000000000) / 1000000000;
+        if (j == 1) {
+            j = 512;
+        } else if (j == 0) {
+            j = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    k = (binary % 100000000000) / 10000000000;
+        if (k == 1) {
+            k = 1024;
+        } else if (k == 0) {
+            k = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    l = (binary % 1000000000000) / 100000000000;
+        if (l == 1) {
+            l = 2048;
+        } else if (l == 0) {
+            l = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    o = (binary % 10000000000000) / 1000000000000;
+        if (o == 1) {
+            o = 4096;
+        } else if (o == 0) {
+            o = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+    p = (binary % 100000000000000) / 10000000000000;
+        if (p == 1) {
+            p = 8192;
+        } else if (p == 0) {
+            p = 0;
+        } else {
+            printf("Invalid input. Try again \n");
+        }
+
+    decimal = a+b+c+d+e+f+g+h+i+j+k+l+o+p;
+    printf("------------------------------------- \n");
+    printf("DECIMAL equivalent:      ");
+    printf("%d \n", decimal);
+
+    return binary;
+}
+
+char convertOctalToBinary(char octal[25])
+{
+    int digit1, digit2, digit3, digit4;
+    int input;
+    int a, b, c, d, f, g, h, i, k, l, m, n;
+    char *a1, *b1, *c1, *d1, *f1, *g1, *h1, *i1, *k1, *l1, *m1, *n1;
+
+
+    printf("\n=====================================\n");
+    printf("\n   Enter your OCTAL number \n");
+    printf("\n=====================================\n");
+    printf("Here: ");
+    scanf(" %d", &input);
+    printf("------------------------------------- \n");
+    printf("BINARY equivalent:       ");
+
+    digit1 = (input % 10000) / 1000;
+
+        if (digit1 >= 4) {
+            digit1 = digit1 - 4;
+            c = 1;
+            c1 = "1";
+        } else {
+            c = 0;
+            c1 = "0";
+        }
+        if (digit1 >= 2) {
+            digit1 = digit1 - 2;
+            b = 1;
+            b1 = "1";
+        } else {
+            b = 0;
+            b1 = "0";
+        }
+        if (digit1 == 1) {
+            a = 1;
+            a1 = "1";
+        } else {
+            a = 0;
+            a1 = "0";
+        }
+
+    if (c == 0 && b == 0 && a == 0) {
+
+    } else {
+        c == 0 ? (b == 0 ? printf("%d", a) : printf("%d%d", b, a)) : printf("%d%d%d", c, b, a);
+    }
+
+    digit2 = (input % 1000) / 100;
+    if (digit2 >= 4) {
+            digit2 = digit2 - 4;
+            g = 1;
+            g1 = "1";
+        } else {
+            g = 0;
+            g1 = "0";
+        }
+        if (digit2 >= 2) {
+            digit2 = digit2 - 2;
+            f = 1;
+            f1 = "1";
+        } else {
+            f = 0;
+            f1 = "0";
+        }
+        if (digit2 == 1) {
+            d = 1;
+            d1 = "1";
+        } else {
+            d = 0;
+            d1 = "0";
+        }
+    if ((c == 0 && b == 0 && a == 0) && (g == 0 && f == 0 && d == 0)) {
+
+    } else {
+      (c == 0 && b == 0 && a == 0) ? (g == 0 ? (f == 0 ? printf("%d", d) : printf("%d%d", f, d)) :
+                                      printf("%d%d%d", g, f, d)) : printf("%d%d%d", g, f, d);
+    }
+
+    digit3 = (input % 100) / 10;
+        if (digit3 >= 4) {
+            digit3 = digit3 - 4;
+            k = 1;
+            k1 = "1";
+        } else {
+            k = 0;
+            k1 = "0";
+        }
+        if (digit3 >= 2) {
+            digit3 = digit3 - 2;
+            i = 1;
+            i1 = "1";
+        } else {
+            i = 0;
+            i1 = "0";
+        }
+        if (digit3 == 1) {
+            h = 1;
+            h1 = "1";
+        } else {
+            h = 0;
+            h1 = "0";
+        }
+
+    if ((c == 0 && b == 0 && a == 0) && (g == 0 && f == 0 && d == 0) && (k == 0 && i == 0 && h == 0)) {
+
+    } else {
+       (c == 0 && b == 0 && a == 0) && (g == 0 && f == 0 && d == 0) ? (k == 0 ? (i == 0 ? printf("%d", h) :
+                                    printf("%d%d", i, h)) : printf("%d%d%d", k, i, h)) : printf("%d%d%d", k, i, h);
+    }
+
+    digit4 = input % 10;
+        if (digit4 >= 4) {
+            digit4 = digit4 - 4;
+            n = 1;
+            n1 = "1";
+        } else {
+            n = 0;
+            n1 = "0";
+        }
+        if (digit4 >= 2) {
+            digit4 = digit4 - 2;
+            m = 1;
+            m1 = "1";
+        } else {
+            m = 0;
+            m1 = "0";
+        }
+        if (digit4 == 1) {
+            l = 1;
+            l1 = "1";
+        } else {
+            l = 0;
+            l1 = "0";
+        }
+
+    printf("%d%d%d \n", n, m, l);
+
+    strcat(octal, c1); strcat(octal, b1); strcat(octal, a1); strcat(octal, g1); strcat(octal, f1); strcat(octal, d1);
+    strcat(octal, k1); strcat(octal, i1); strcat(octal, h1); strcat(octal, n1); strcat(octal, m1); strcat(octal, l1);
+    strcat(octal, " ");
+
+
+    return octal;
+}
+
+char convertHexToBinary(char hex[])
+{
+    int digit [4];
+    int i;
+    int a, b, c, d;
+    char *a1, *b1, *c1, *d1;
+
+    printf("\n=====================================\n");
+    printf("\n   Enter your HEXADECIMAL number \n");
+    printf("\n=====================================\n");
+    printf("Here: ");
+    getchar();
+
+    for (i = 0; i < 4; i++) {
+            digit [i] = getchar();
+            if (digit[i] == '\n') {
+                break;
+            }
+            if (isalpha(digit[i])) {
+                if (islower(digit[i])) {
+                    digit[i] = toupper(digit[i]);
+                }
+                    digit [i] == 'A' ? digit [i] = 10 : (digit[i] == 'B' ? (digit[i] = 11) : (digit[i] == 'C' ? (digit[i] = 12) :
+                                            (digit[i] == 'D') ? (digit[i] = 13) : (digit[i] == 'E' ? (digit[i] = 14) :
+                                            (digit[i] == 'F' ? (digit[i] = 15): (digit[i] = digit[i])))));
+
+
+            } else if (isdigit(digit[i])) {
+                    digit [i] == '9' ? digit [i] = 9 : (digit[i] == '8' ? (digit[i] = 8) : (digit[i] == '7' ? (digit[i] = 7) :
+                                        (digit[i] == '6') ? (digit[i] = 6) : (digit[i] == '5' ? (digit[i] = 5) :
+                                        (digit[i] == '4' ? (digit[i] = 4): (digit[i] == '3' ? (digit[i] = 3) :
+                                        (digit[i] == '2' ? (digit[i] = 2) : (digit[i] == '1' ? (digit[i] = 1) : (digit[i] = 0))))))));
+            }
+            if (digit[i] >= 8) {
+                 digit[i] = digit[i] - 8;
+                a = 1;
+                a1 = "1";
+            } else {
+                a = 0;
+                a1 = "0";
+            }
+
+            if (digit[i] >= 4) {
+                digit[i] = digit[i] - 4;
+                b = 1;
+                b1 = "1";
+            } else {
+                b = 0;
+                b1 = "0";
+            }
+            if (digit[i] >= 2) {
+                digit[i] = digit[i] - 2;
+                c = 1;
+                c1 = "1";
+            } else {
+                c = 0;
+                c1 = "0";
+            }
+            if (digit[i] == 1) {
+                d = 1;
+                d1 = "1";
+            } else {
+                d = 0;
+                d1 = "0";
+            }
+
+            if (i == 0) {
+                printf("------------------------------------- \n");
+                printf("BINARY equivalent:       ");
+                (a == 0 && b == 0 && c == 0) ? printf("%d", d) : ((a == 0 && b == 0) ? printf("%d%d", c, d) :
+                            ((a == 0) ? printf("%d%d%d", b, c, d) : printf("%d%d%d%d", a, b, c, d)));
+
+            } else {
+                printf("%d%d%d%d", a, b, c, d);
+            }
+
+
+        strcat(hex, a1); strcat(hex, b1); strcat(hex, c1); strcat(hex, d1);
+    }
+    printf("\n");
+    return hex;
+}
+
+void clear()
+{
+    while(getchar() != '\n') {
+        ;
+    }
+}
+
