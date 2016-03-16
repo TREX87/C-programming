@@ -1,0 +1,637 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+#include<ctype.h>
+#include<string.h>
+/*  Prototypes for all our functions */
+void playBattleship(void);  //calls all other functions in certain sequence and then finishes the game
+void updateData(char board[], char mask[], int *missilesFired, int *missilesRemaining, int *score, char previousMove[], char currentMove[], int *shipCharsCounter);    //update the values after every move of user
+void drawGame(char mask[], int missilesFired, int missilesRemaining, int score, char previousMove[]);   //"draw" a masked board and user's interface
+void initGame(char board[], char mask[]);   //initializes our main arrays
+void loadShips(char board[], char ship[]);  //sets ships inside the board
+int checkMove(char coord[]);    //validate user's input
+void clear();       //clears the buffer
+void computerMove(char mask[], char board[], int *scoreComp, int *shipCharsCounter);
+void checkBoard(char board[], char mask[], int *copyScoreComp, int *copyCharsCounter);
+
+int main()
+{
+    playBattleship();   //we need the main function only for calling "playBattleship"
+
+    return 0;
+
+}
+
+void playBattleship(void)
+{
+    //we declare our arrays: board, mask, previousMove, currentMove and etc.
+    char board[391];
+    char mask[391];
+    char coord[3];
+    char previousMove[10] = {'N', 'A'};
+    char currentMove[3];
+    int missilesRemaining = 500;
+    int missilesFired = 0;
+    int score = 0;                  //counter of player's scores
+    int scoreComp = 0;              //counter of computer's scores
+    int validate, keepGoing = 1;
+    int shipCharsCounter = 0;       //counts all ships characters, which was hit by player or computer
+
+    initGame(board, mask);                  //initializes the game
+
+    do {                                    //uses a loop to ask the user for moves until the game is over...
+        drawGame(mask, missilesFired, missilesRemaining, score, previousMove);  //displays the masked board and simple user interface
+        do {
+            strcpy(coord, "00");            //overwrites that string everytime it loops through in case user won't input anything
+            printf(" Enter Target Coordinates--> ");
+            scanf("%2[^\n]", coord);
+            clear();                            //clear buffer from '\n' character
+            validate = checkMove(coord);        //always checks input
+            if (validate == -1) {
+                if (coord[0] == '0' && coord[1] == '0') {
+                printf(" Sorry... '' is not a valid coordinate... Try again! \n");
+                } else {
+                printf(" Sorry... '%s' is not a valid coordinate... Try again! \n", coord);
+                }
+            } else {
+                keepGoing = 0;
+            }
+        } while (keepGoing);
+        strcpy(currentMove, coord);     //if user gave acceptable coordinates, we copy them into currentMove
+        keepGoing = 1;                  //we set it to one again that "while" repeat validation
+        updateData(board, mask, &missilesFired, &missilesRemaining, &score, previousMove, currentMove, &shipCharsCounter);
+
+        if (previousMove[0] == 'M') {       //condition is checking whether user missed or not to pass the turn to computer
+            printf("\n\n \"Black Beard\" makes his move... His score: %d ", scoreComp);
+            printf("\n please, press \"enter\"... \n\n");
+            getchar();
+            computerMove(mask, board, &scoreComp, &shipCharsCounter);
+        }
+
+    } while (shipCharsCounter != 22 && missilesRemaining > 0); //only two conditions when game ends
+
+    if (score > scoreComp) {     //displays a message indicating whether the player won or lost
+        int i, j, z = 0;
+        for(i=0; i<390; i++) {      //we set all elements to '~' again, becouse all ships was destroyed
+            mask[i] ='~';
+        }
+        printf("\n\n  Hooray... \"Black Beard\" is defeated, Captain! You won the WAR! \n");
+        printf("  You can open the bottle of ROM, my friend! \n\n");
+        for(i=0; i<15; i++) {                /* display 15 rows of information (incl. border) */
+            if(i < 9) {
+                printf(" %c|", i + 1 + '0');   /* for each digit character */
+            } else {
+                printf(" %c|", i + 1 + 55);    /* for each alphabetic character 'A' through 'F' */
+            }
+
+            for(j=z; j<390; j++) {
+                printf("%c ", mask[j]);
+                if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                    printf("|\n");
+                    z = j+1;        //that statement guarantees that this particular condition won't repeat
+                    break;          //we jump out from our "for"-statement to the external "for"-statement
+                } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                    printf("|\n");
+                    z = j+1;
+                    break;
+                }
+            }
+        }
+    } else if (score < scoreComp) {
+        int i, j, z = 0;
+        printf("\n\n  Sorry...  You lost the WAR! Your enemy, \"Black Beard\", \n celebrates the Victory with your bottle of ROME! \n\n");
+        for(i=0; i<15; i++) {                /* display 15 rows of information (incl. border) */
+            if(i < 9) {
+                printf(" %c|", i + 1 + '0');   /* for each digit character */
+            } else {
+                printf(" %c|", i + 1 + 55);    /* for each alphabetic character 'A' through 'F' */
+            }
+
+            for(j=z; j<390; j++) {      //prints the board with ships on it forshowing the user where they was
+                printf("%c ", board[j]);
+                if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                    printf("|\n");
+                    z = j+1;        //that statement guarantees that this particular condition won't repeat
+                    break;          //we jump out from our "for"-statement to the external "for"-statement
+                } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                    printf("|\n");
+                    z = j+1;
+                    break;
+                }
+            }
+        }
+    }
+
+    return;
+}
+
+void drawGame(char mask[], int missilesFired, int missilesRemaining, int score, char previousMove[])
+{
+    int i, j, z = 0;
+
+    printf("   C Battleship...\n");
+    printf("   A B C D E F G H I J K L M N O P Q R S T U V W X Y Z\n");
+    for(i=0; i<15; i++) {                /* display 15 rows of information (incl. border) */
+        if(i < 9) {
+            printf(" %c|", i + 1 + '0');   /* for each digit character */
+        } else {
+            printf(" %c|", i + 1 + 55);    /* for each alphabetic character 'A' through 'F' */
+        }
+
+        for(j=z; j<390; j++) {
+            printf("%c ", mask[j]);
+            if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                printf("|\n");
+                z = j+1;        //that statement guarantees that this particular condition won't repeat
+                break;          //we jump out from our "for"-statement to the external "for"-statement
+            } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                printf("|\n");
+                z = j+1;
+                break;
+            }
+        }
+    }
+    printf("\n");
+    printf(" Missiles Fired: %.2d    ", missilesFired);     //that interface shows current situation with missiles and score
+    printf("Missiles Remaining: %.2d", missilesRemaining);
+    printf("\n Current  Score: %.3d  ", score);
+    if (strcmp(previousMove, "NA") == 0) {      //first time, it is always shows only "N/A"
+        printf(" Previous Move:      %c/%c \n", previousMove[0], previousMove[1]);
+    } else {
+        printf(" Previous Move:      %s \n", previousMove);
+    }
+
+    return;
+}
+
+void updateData(char board[], char mask[], int *missilesFired, int *missilesRemaining, int *score, char previousMove[], char currentMove[], int *shipCharsCounter)
+{
+    int i;
+    int firstCoord, secondCoord;
+    int position;                   //variable for coordinates - where after every move program will put whether "X" or "simbol"
+
+    if (isdigit(currentMove[0])) {
+            firstCoord = currentMove[0] - '0';    //converts digit character into digit number
+    } else if (isalpha(currentMove[0])) {
+            firstCoord = currentMove[0] - 55;     //makes character's values equals from 10 to 15, according to ASCII numeric values for characters
+    }
+
+    secondCoord = currentMove[1] - 65;
+    position = (firstCoord - 1) * 26 + secondCoord;    //formula for counting coordinates
+
+    if (mask[position] == board[position]) {
+        mask[position] = 'X';               //if mask's and board's elements the same, that mean they both equal '~' - that mean user missed
+    } else {
+        mask[position] = board[position];   //copy value of element from the board to the value of element from the mask
+        *shipCharsCounter = *shipCharsCounter + 1;
+    }
+
+    *missilesFired = *missilesFired + 1;
+    *missilesRemaining = *missilesRemaining - 1;
+
+    if (mask[position] != '~' && mask[position] != 'X') {
+        *score = *score + 5;
+        strcpy(previousMove, "HIT on ");    //copies a message for user to "PreviousMove" array
+        strcat(previousMove, currentMove);  //adds values of current cordinates to values of previous coordinates
+    } else {
+        strcpy(previousMove, "MISS on ");
+        strcat(previousMove, currentMove);
+    }
+
+    return;
+}
+
+void initGame(char board[], char mask[])
+{
+    char ship[10] = "[CCCCC=>";     //we start initializing from the biggest ship
+    int i, j, z = 0;
+
+    for(i=0; i<390; i++) {
+        mask[i] = '~';
+        board[i] = '~';             //at first, we assign all elements in the "board" array to '~' character
+    }
+    mask[i] = '\0'; /* add the null byte to use as a string if required */
+    board[i] = '\0';
+
+    srand(time(NULL));              //function that generates new numbers at every new game
+    loadShips(board, ship);
+    strcpy(ship, "[DDD=>");         //with that function we overwrite our string array with new "ship"
+    loadShips(board, ship);         //we repeat all that operation with another ship, but with slightly different numbers because of the diverse of the size
+    strcpy(ship, "[SS=>");
+    loadShips(board, ship);
+    strcpy(ship, "[F>");
+    loadShips(board, ship);
+
+    for(i=0; i<15; i++) {                /* display 15 rows of information (incl. border) */
+        if(i < 9) {
+            printf(" %c|", i + 1 + '0');   /* for each digit character */
+        } else {
+            printf(" %c|", i + 1 + 55);    /* for each alphabetic character 'A' through 'F' */
+        }
+        for(j=z; j<390; j++) {
+            printf("%c ", board[j]);
+            if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                printf("|\n");
+                z = j+1;        //that statement guarantees that this particular condition won't repeat
+                break;          //we jump out from our "for"-statement to the external "for"-statement
+            } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                printf("|\n");
+                z = j+1;
+                break;
+            }
+        }
+    }
+
+    return;
+
+}
+
+void loadShips(char board[], char ship[])
+{
+    int length, amountOfChar;
+    int i, j = 0, firstCoord, secondCoord, initialPosition;
+    int check = 1;     //we need that variable for checking the first important condition before we place the ship
+
+    length = strlen(ship);  //string function for determining the lenght of the current ship
+
+    if (length == 8) {
+        firstCoord = rand() % 15;    //15       //we randomly seeking for coordinates for placing our ship
+        secondCoord = rand() % 18;  //18
+        initialPosition = (firstCoord * 26) + secondCoord;  //with that formula we calculate the element from which we start to place our ship
+        for (i = initialPosition; i < initialPosition + 8; i++) {
+            board[i] = ship[j];
+            j++;
+        }
+    } else {
+
+        j = 0;                  //we assign 'j' (a "ship" index) to a NULL value to read that array from the start again
+        firstCoord = rand() % 15;    //15
+        if (length == 6) {
+            secondCoord = rand() % 20;   //20
+            amountOfChar = 6;   //that variable helps us to determine how many characters in the board have to be empty for placing the ship
+        } else if (length == 5) {
+            secondCoord = rand() % 21;
+            amountOfChar = 5;
+        } else if (length == 3) {
+            secondCoord = rand() % 23;
+            amountOfChar = 3;
+        }
+        initialPosition = (firstCoord * 26) + secondCoord;
+        for (i = initialPosition; i < initialPosition + amountOfChar; i++) {
+            if (check == 1) {  //that condition we check only once, and if it will work we won't check it again in the next iteration
+
+                if (board[i] == '~' && board[i+1] == '~' && board[i+2] == '~' && board[i+(amountOfChar - 1)] == '~') {
+                    board[i] = ship[j];
+                    j++;
+                    check++;
+                } else {
+                    firstCoord = rand() % 15;   //if first condition didn't work, we randomly generate new
+                    if (length == 6) {          //coordinates for "free" space in our "board" until we will find it
+                    secondCoord = rand() % 20;
+                    } else if (length == 5) {
+                        secondCoord = rand() % 21;
+                    } else if (length == 3) {
+                        secondCoord = rand() % 23;
+                    }
+                    initialPosition = (firstCoord * 26) + secondCoord;
+                    i = initialPosition;    //we assign 'i' to initial position again to continue from starting point of our iteration
+                    i--;                //if we don't decrease 'i' variable, at the end of this iteration value of 'i' will
+                }                       //be 'initialPosition' + 1, and we don't want to skip one of ours character
+            } else {
+                board[i] = ship[j];     //if everething is ok, we place our ship inside the board
+                j++;
+            }
+        }
+    }
+
+    return;
+
+}
+
+int checkMove(char coord[])
+{
+    int value = 0;
+    int firstCoord, secondCoord;        //variables that will store the numeric values of coordinates
+
+    if (isdigit(coord[0])) {
+        firstCoord = coord[0] - '0';    //converts digit character into digit number
+    } else if (isalpha(coord[0])) {
+        if (isupper(coord[0])) {
+            firstCoord = coord[0] - 55;     //makes character's values equals from 10 to 15, according to ASCII numeric values for characters
+            if (firstCoord > 15) {
+                value = -1;
+            }
+        } else {
+            value = -1;
+        }
+    } else {
+        value = -1;         //if the first character not digit or letter, then return "-1"
+    }
+
+    if (isalpha(coord[1])) {
+        if (isupper(coord[1])) {
+            secondCoord = coord[1] - 65;    //converts characters into numbers from 0 to 25, according to ASCII numeric values for characters
+        } else {
+            value = -1;
+        }
+    } else {
+        value = -1;
+    }
+
+    if (value != -1) {
+        value = (firstCoord - 1) * 26 + secondCoord;    //formula for counting coordinates
+    }
+
+    return value;
+
+}
+
+void computerMove(char mask[], char board[], int *scoreComp, int *shipCharsCounter)
+{
+    int i, j, z = 0;
+    int firstCoord, secondCoord, initialPosition;
+    int check = 1;      //that variable only for "while"-loop inside this function
+    int temp;
+    int copyScoreComp = *scoreComp;
+    int copyCharsCounter = *shipCharsCounter;
+
+    checkBoard(board, mask, &copyScoreComp, &copyCharsCounter);
+    *scoreComp = copyScoreComp;            //we assign new value to "scoreComp" if its copy was increased inside "checkBoard" function
+    *shipCharsCounter = copyCharsCounter;  //we assign new value to "CharsCounter" if its copy was increased inside "checkboard" function
+
+    firstCoord = rand() % 15;            //15
+    secondCoord = rand() % 26;          //26
+    initialPosition = (firstCoord * 26) + secondCoord;
+
+    do {
+        int check1 = 1, check2 = 1;    //that variables for internal "while"-loops, they should be reset to one every time, when loop repeats
+        if (mask[initialPosition] == '~') {
+            if (board[initialPosition] != '~') {
+                *scoreComp = *scoreComp + 5;
+                *shipCharsCounter = *shipCharsCounter + 1;
+                mask[initialPosition] = board[initialPosition];
+                temp = initialPosition;   //saves the coordinates of first successful shot
+                while (check1) {
+                    printf("\n\n \"Black Beard\" makes his move... His score: %d \n", *scoreComp);
+                    z = 0;
+                    for(i=0; i<15; i++) {
+                        if(i < 9) {
+                            printf(" %c|", i + 1 + '0');
+                        } else {
+                            printf(" %c|", i + 1 + 55);
+                        }
+
+                        for(j=z; j<390; j++) {
+                            printf("%c ", mask[j]);
+                            if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                                printf("|\n");
+                                z = j+1;        //that statement guarantees that this particular condition won't repeat
+                                break;          //we jump out from our "for"-statement to the external "for"-statement
+                            } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                                printf("|\n");
+                                z = j+1;
+                                break;
+                            }
+                        }
+                    }
+                    printf("\n please, press \"enter\"... ");
+                    getchar();
+                    printf("\n\n\n");
+                    if (board[initialPosition] != '>') {
+                        *scoreComp = *scoreComp + 5;
+                        *shipCharsCounter = *shipCharsCounter + 1;
+                        initialPosition++;
+                        mask[initialPosition] = board[initialPosition];
+                    } else {
+                        initialPosition = temp;
+                        if (mask[initialPosition] != '[') {
+                            while (check2) {
+                                z = 0;
+                                *scoreComp = *scoreComp + 5;
+                                *shipCharsCounter = *shipCharsCounter + 1;
+                                initialPosition--;
+                                mask[initialPosition] = board[initialPosition];
+
+                                printf("\n\n \"Black Beard\" makes his move... His score: %d \n", *scoreComp);
+                                for(i=0; i<15; i++) {
+                                    if(i < 9) {
+                                        printf(" %c|", i + 1 + '0');
+                                    } else {
+                                        printf(" %c|", i + 1 + 55);
+                                    }
+
+                                    for(j=z; j<390; j++) {
+                                        printf("%c ", mask[j]);
+                                        if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                                            printf("|\n");
+                                            z = j+1;        //that statement guarantees that this particular condition won't repeat
+                                            break;          //we jump out from our "for"-statement to the external "for"-statement
+                                        } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                                            printf("|\n");
+                                            z = j+1;
+                                            break;
+                                        }
+                                    }
+                                }
+                                printf("\n please, press \"enter\"... ");
+                                getchar();
+                                printf("\n\n\n");
+                                if (board[initialPosition] == '[') {
+                                    check1 = 0;
+                                    check2 = 0;
+                                    firstCoord = rand() % 15;        //15
+                                    secondCoord = rand() % 26;      //26
+                                    initialPosition = (firstCoord * 26) + secondCoord;
+                                }
+                            }
+
+                        } else {                //if the first hit was on the "[" character, than AI continue his search for the rest of the ships
+                            check1 = 0;
+                            firstCoord = rand() % 15;        //15
+                            secondCoord = rand() % 26;      //26
+                            initialPosition = (firstCoord * 26) + secondCoord;
+                        }
+                    }
+
+                }
+
+            } else {
+                mask[initialPosition] = 'X';
+                check = 0;
+            }
+        } else {
+            firstCoord = rand() % 15;        //15
+            secondCoord = rand() % 26;      //26
+            initialPosition = (firstCoord * 26) + secondCoord;
+        }
+    } while (check);
+
+
+    return;
+}
+
+
+void checkBoard(char board[], char mask[], int * copyScoreComp, int *copyCharsCounter)
+{
+    int i, a, j, z;  //ALL that variables for our "for"-loops
+    int y;          //COUNTER for moving along the ships
+    int b = 0;      //COUNTER for moving along the ships in reverse order
+
+    for (i = 0; i < 390; i++) {
+        y = 0;
+        if (mask[i] != '~' && mask[i] != 'X') {
+
+                do {
+                    z = 0;
+                    y++;
+
+                    if (mask[i] == '[') {                   //first main condition
+                        if (mask[i+y] != board[i+y]) {
+                            mask[i+y] = board[i+y];
+                            *copyScoreComp = *copyScoreComp + 5;
+                            *copyCharsCounter = *copyCharsCounter + 1;
+                            printf("\n\n \"Black Beard\" makes his move... His score: %d\n", *copyScoreComp);
+                            for(a=0; a<15; a++) {
+                                if(a < 9) {
+                                    printf(" %c|", a + 1 + '0');
+                                } else {
+                                    printf(" %c|", a + 1 + 55);
+                                }
+
+                                for(j=z; j<390; j++) {
+                                    printf("%c ", mask[j]);
+                                    if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                                        printf("|\n");
+                                        z = j+1;        //that statement guarantees that this particular condition won't repeat
+                                        break;          //we jump out from our "for"-statement to the external "for"-statement
+                                    } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                                        printf("|\n");
+                                        z = j+1;
+                                        break;
+                                    }
+                                }
+                            }
+                            printf("\n please, press \"enter\"... ");
+                            getchar();          //user got to input something for continuing
+                            printf("\n\n\n");
+
+                            if (mask[i+y] == '>')
+                                break;
+                        }
+
+                    } else if (mask[i] == '>') {            //second main condition
+                        if (mask[i-y] != board[i-y]) {
+                            mask[i-y] = board[i-y];
+                            *copyScoreComp = *copyScoreComp + 5;
+                            *copyCharsCounter = *copyCharsCounter + 1;
+                            printf("\n\n \"Black Beard\" makes his move... His score: %d\n", *copyScoreComp);
+                            for(a=0; a<15; a++) {
+                                if(a < 9) {
+                                    printf(" %c|", a + 1 + '0');
+                                } else {
+                                    printf(" %c|", a + 1 + 55);
+                                }
+
+                                for(j=z; j<390; j++) {
+                                    printf("%c ", mask[j]);
+                                    if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                                        printf("|\n");
+                                        z = j+1;        //that statement guarantees that this particular condition won't repeat
+                                        break;          //we jump out from our "for"-statement to the external "for"-statement
+                                    } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                                        printf("|\n");
+                                        z = j+1;
+                                        break;
+                                    }
+                                }
+                            }
+                            printf("\n please, press \"enter\"... ");
+                            getchar();
+                            printf("\n\n\n");
+
+                            if (mask[i-y] == '[')
+                                break;              //when we reach the end, we jump out of the loop
+                        }
+                    } else {                                //third main condition
+                        if (mask[i+y] != board[i+y]) {
+                            mask[i+y] = board[i+y];
+                            *copyScoreComp = *copyScoreComp + 5;
+                            *copyCharsCounter = *copyCharsCounter + 1;
+                            printf("\n\n \"Black Beard\" makes his move... His score: %d\n", *copyScoreComp);
+                            for(a=0; a<15; a++) {
+                                if(a < 9) {
+                                    printf(" %c|", a + 1 + '0');
+                                } else {
+                                    printf(" %c|", a + 1 + 55);
+                                }
+
+                                for(j=z; j<390; j++) {
+                                    printf("%c ", mask[j]);
+                                    if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                                        printf("|\n");
+                                        z = j+1;        //that statement guarantees that this particular condition won't repeat
+                                        break;          //we jump out from our "for"-statement to the external "for"-statement
+                                    } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                                        printf("|\n");
+                                        z = j+1;
+                                        break;
+                                    }
+                                }
+                            }
+                            printf("\n please, press \"enter\"... ");
+                            getchar();
+                            printf("\n\n\n");
+
+                            if (mask[i+y] == '>') {
+                                z = 0;
+                                b++;        //our reverse counter
+                                if (mask[i-b] != board[i-b]) {
+                                    mask[i-b] = board[i-b];
+                                    *copyScoreComp = *copyScoreComp + 5;
+                                    *copyCharsCounter = *copyCharsCounter + 1;
+                                    printf("\n\n \"Black Beard\" makes his move... His score: %d\n", *copyScoreComp);
+                                    for(a=0; a<15; a++) {
+                                        if(a < 9) {
+                                            printf(" %c|", a + 1 + '0');
+                                        } else {
+                                            printf(" %c|", a + 1 + 55);
+                                        }
+
+                                        for(j=z; j<390; j++) {
+                                            printf("%c ", mask[j]);
+                                            if (j == 25 || j == 51 || j == 77 || j == 103 || j == 129 || j == 155 || j == 181 || j == 207) {
+                                                printf("|\n");
+                                                z = j+1;        //that statement guarantees that this particular condition won't repeat
+                                                break;          //we jump out from our "for"-statement to the external "for"-statement
+                                            } else if (j == 233 || j == 259 || j == 285 || j == 311 || j == 337 || j == 363 || j == 389) {
+                                                printf("|\n");
+                                                z = j+1;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    printf("\n please, press \"enter\"... ");
+                                    getchar();
+                                    printf("\n\n\n");
+
+                                    if (mask[i-b] == '[')
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                } while (y < 7);  //there is no ship longer than 8 character
+
+            }
+        }
+
+
+    return;
+}
+
+void clear()
+{
+    while (getchar() != '\n')
+        ;
+}
